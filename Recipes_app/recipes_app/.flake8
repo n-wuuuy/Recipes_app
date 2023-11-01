@@ -2,4 +2,4 @@
 exclude = venv, settings.py, __init__.py, .git, migrations.py
 max-line-length = 120
 max-complexity = 8
-ignore = E501
+ignore = E203, E266, E501, W503
