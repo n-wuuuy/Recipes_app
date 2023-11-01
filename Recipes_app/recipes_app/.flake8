@@ -1,0 +1,5 @@
+[flake8]
+exclude = venv, settings.py, __init__.py, .git, migrations.py
+max-line-length = 120
+max-complexity = 8
+ignore = E501
