@@ -30,7 +30,7 @@ class Product(models.Model):
 class Recipe(models.Model):
     title = models.CharField(max_length=256)
     description = models.TextField(blank=True)
-    picture = models.ImageField(upload_to=f'recipes_picture/')
+    picture = models.ImageField(upload_to='recipes_picture/')
     cooking_time = models.TimeField(default=0)
     time_create = models.DateTimeField(auto_now_add=True)
     products = models.ManyToManyField(Product)
@@ -50,7 +50,7 @@ class Recipe(models.Model):
 class Cooking_steps(models.Model):
     title = models.CharField(max_length=256)
     instruction = models.TextField(blank=True)
-    picture = models.ImageField(upload_to=f'steps_picture/')
+    picture = models.ImageField(upload_to='steps_picture/')
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
 
     def __str__(self):

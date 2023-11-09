@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from recipes.models import *
+from recipes.models import Cooking_steps, Category, Product, Recipe
 
 
 # Register your models here.
@@ -39,7 +39,7 @@ class RecipeAdmin(admin.ModelAdmin):
         (None, {
             'fields': (('picture', 'video'),)
         })
-        )
+    )
 
 
 @admin.register(Cooking_steps)
