@@ -47,7 +47,7 @@ class Recipe(models.Model):
         verbose_name_plural = 'Recipes'
 
 
-class Cooking_steps(models.Model):
+class CookingSteps(models.Model):
     title = models.CharField(max_length=256)
     instruction = models.TextField(blank=True)
     picture = models.ImageField(upload_to='steps_picture/')
