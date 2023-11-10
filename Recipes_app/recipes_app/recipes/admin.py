@@ -1,12 +1,12 @@
 from django.contrib import admin
 
-from recipes.models import Cooking_steps, Category, Product, Recipe
+from recipes.models import CookingSteps, Category, Product, Recipe
 
 
 # Register your models here.
 
 class StepsInline(admin.TabularInline):
-    model = Cooking_steps
+    model = CookingSteps
     extra = 1
 
 
@@ -42,6 +42,6 @@ class RecipeAdmin(admin.ModelAdmin):
     )
 
 
-@admin.register(Cooking_steps)
+@admin.register(CookingSteps)
 class StepsAdmin(admin.ModelAdmin):
     list_display = ('title', 'recipe')
