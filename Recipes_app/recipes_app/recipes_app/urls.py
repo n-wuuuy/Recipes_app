@@ -16,8 +16,16 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from rest_framework.routers import SimpleRouter
+
+from recipes.views import CategoryModelView
+
+router = SimpleRouter()
+router.register('api/v1/category', CategoryModelView)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('recipes.urls')),
 ]
+
+urlpatterns += router.urls
