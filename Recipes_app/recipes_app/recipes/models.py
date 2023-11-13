@@ -51,7 +51,7 @@ class CookingSteps(models.Model):
     title = models.CharField(max_length=256)
     instruction = models.TextField(blank=True)
     picture = models.ImageField(upload_to='steps_picture/')
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name='steps')
 
     def __str__(self):
         return f'{self.title}-{self.recipe}'
