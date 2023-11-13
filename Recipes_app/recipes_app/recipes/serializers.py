@@ -15,13 +15,26 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class RecipeSerializer(serializers.ModelSerializer):
+class RecipeListSerializer(serializers.ModelSerializer):
+    product_count = serializers.IntegerField()
+    category = serializers.StringRelatedField(read_only=True)
+
     class Meta:
         model = Recipe
-        fields = '__all__'
+        fields = ('title', 'picture', 'cooking_time', 'portion', 'category', 'product_count')
 
 
 class CookingStepsSerializer(serializers.ModelSerializer):
     class Meta:
         model = CookingSteps
+        fields = '__all__'
+
+
+class RecipeDitailSerializer(serializers.ModelSerializer):
+    category = serializers.StringRelatedField(read_only=True)
+    steps = CookingStepsSerializer(many=True)
+    products = serializers.StringRelatedField(many=True)
+
+    class Meta:
+        model = Recipe
         fields = '__all__'
