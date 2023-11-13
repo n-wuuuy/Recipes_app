@@ -1,10 +1,11 @@
-from rest_framework import mixins
+from django.db.models import Count
 from rest_framework.viewsets import ModelViewSet
-from rest_framework.generics import ListAPIView, GenericAPIView, CreateAPIView
-from rest_framework.permissions import IsAdminUser, AllowAny
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
-from recipes.models import Category, Product, CookingSteps
-from recipes.serializers import CategorySerializer, ProductSerializer, CookingStepsSerializer
+from recipes.models import Category, Product, CookingSteps, Recipe
+from recipes.permissions import IsOwnerOrStaffOrReadOnly
+from recipes.serializers import CategorySerializer, ProductSerializer, CookingStepsSerializer, RecipeListSerializer, \
+    RecipeDitailSerializer
 
 
 # Create your views here.
@@ -12,28 +13,29 @@ from recipes.serializers import CategorySerializer, ProductSerializer, CookingSt
 class CategoryModelView(ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = (IsAdminUser,)
+    permission_classes = [IsOwnerOrStaffOrReadOnly]
 
 
 class ProductModelView(ModelViewSet):
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-
-    def get_permissions(self):
-        if self.action in ['create', 'update', 'partial_update', 'destroy']:
-            self.permission_classes = [IsAdminUser, ]
-        elif self.action in ['list', 'retrieve']:
-            self.permission_classes = [AllowAny, ]
-        return super().get_permissions()
+    permission_classes = [IsOwnerOrStaffOrReadOnly]
 
 
 class CookingStepsModelView(ModelViewSet):
     queryset = CookingSteps.objects.all()
     serializer_class = CookingStepsSerializer
+    permission_classes = [IsOwnerOrStaffOrReadOnly]
 
-    def get_permissions(self):
-        if self.action in ['create', 'update', 'partial_update', 'destroy']:
-            self.permission_classes = [IsAdminUser, ]
-        elif self.action in ['list', 'retrieve']:
-            self.permission_classes = [AllowAny, ]
-        return super().get_permissions()
+
+class RecipeModelView(ModelViewSet):
+    queryset = Recipe.objects.all().annotate(product_count=Count('products')
+                                             ).select_related('category').prefetch_related('steps',
+                                                                                           'products')
+    permission_classes = [IsOwnerOrStaffOrReadOnly, IsAuthenticatedOrReadOnly]
+
+    def get_serializer_class(self):
+        if self.action == 'list':
+            return RecipeListSerializer
+        else:
+            return RecipeDitailSerializer
