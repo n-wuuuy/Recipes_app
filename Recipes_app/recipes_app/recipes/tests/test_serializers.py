@@ -49,6 +49,60 @@ class ProductSerializerTestCase(TestCase):
         self.assertEqual(exected_data, data)
 
 
+class RecipeSerializerTestCase(TestCase):
+
+    def test_list_serializer(self):
+        user1 = User.objects.create(username='user1',
+                                    first_name='Ivan',
+                                    last_name='Danilevich')
+        product1 = Product.objects.create(name='Cucumber', weight=250)
+        product2 = Product.objects.create(name='Patato', weight=450)
+        product3 = Product.objects.create(name='Meat', weight=150)
+        category1 = Category.objects.create(name='Salad')
+        category2 = Category.objects.create(name='Meat')
+        recipe1 = Recipe.objects.create(title='Salad',
+                                        description='tasty salad',
+                                        picture='',
+                                        cooking_time='00:30:00',
+                                        time_create=datetime.now(),
+                                        category=category1,
+                                        owner=user1,
+                                        portion=5,
+                                        video='https://www.youtube.com/watch?v=Z2NHP2NQD4k')
+        recipe2 = Recipe.objects.create(title='Meat',
+                                        description='tasty meat',
+                                        picture='',
+                                        cooking_time='01:13:00',
+                                        category=category2,
+                                        owner=user1,
+                                        portion=2)
+        recipe1.products.add(product1, product2)
+        recipe2.products.add(product1, product2, product3)
+        recipes = Recipe.objects.all().annotate(product_count=Count('products')
+                                                ).select_related('category').prefetch_related('steps',
+                                                                                              'products')
+        data = RecipeListSerializer(recipes, many=True).data
+        exected_data = [
+            {
+                "title": "Salad",
+                "picture": None,
+                "cooking_time": '00:30:00',
+                "portion": 5,
+                "category": "Salad",
+                "product_count": 2
+            },
+            {
+                "title": "Meat",
+                "picture": None,
+                "cooking_time": '01:13:00',
+                "portion": 2,
+                "category": "Meat",
+                "product_count": 3
+            }
+        ]
+        self.assertEqual(exected_data, data)
+
+
 class CookingStepsSerializerTestCase(TestCase):
     def test_serializer(self):
         user1 = User.objects.create(username='user1',
