@@ -17,7 +17,7 @@ jobs:
         python -m  flake8
     - name: Start django test
       run: |
-        cd Recipes_app/recipes_app && docker-compose run --rm web-app sh -c "python manage.py test recipes.tests
+        cd Recipes_app/recipes_app && docker-compose run --rm web-app sh -c "python manage.py test"
     - name: Build and run containers
       run: |
         cd Recipes_app/recipes_app && docker-compose up -d --build
