@@ -57,3 +57,20 @@ class CategoryApiTestCase(APITestCase):
         response = self.client.delete(url, data={'id': self.category1.id})
         self.assertEqual(status.HTTP_204_NO_CONTENT, response.status_code)
         self.assertEqual(1, Category.objects.all().count())
+
+    def test_update_not_staff(self):
+        self.user2 = User.objects.create(username='test_username2')
+        url = reverse('category-detail', args=(self.category1.id, ))
+        data = {
+            "name": 'Fish',
+        }
+        json_data = json.dumps(data)
+        self.client.force_login(self.user2)
+        response = self.client.put(url, data=json_data,
+                                   content_type="application/json")
+        self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
+        self.assertEqual(response.data, {'detail': ErrorDetail(string='You do not have permission to perform this '
+                                                                      'action.',
+                                                               code='permission_denied')})
+        self.category1.refresh_from_db()
+        self.assertNotEquals('Fish', self.category1.name)
