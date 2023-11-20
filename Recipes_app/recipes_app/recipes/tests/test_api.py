@@ -36,3 +36,16 @@ class CategoryApiTestCase(APITestCase):
                                     content_type="application/json")
         self.assertEqual(status.HTTP_201_CREATED, response.status_code)
         self.assertEqual(3, Category.objects.all().count())
+
+    def test_update(self):
+        url = reverse('category-detail', args=(self.category1.id,))
+        data = {
+            "name": 'Fish',
+        }
+        json_data = json.dumps(data)
+        self.client.force_login(self.user)
+        response = self.client.put(url, data=json_data,
+                                   content_type="application/json")
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.category1.refresh_from_db()
+        self.assertEqual('Fish', self.category1.name)
