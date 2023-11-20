@@ -49,3 +49,11 @@ class CategoryApiTestCase(APITestCase):
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.category1.refresh_from_db()
         self.assertEqual('Fish', self.category1.name)
+
+    def test_delete(self):
+        self.assertEqual(2, Category.objects.all().count())
+        url = reverse('category-detail', args=(self.category1.id,))
+        self.client.force_login(self.user)
+        response = self.client.delete(url, data={'id': self.category1.id})
+        self.assertEqual(status.HTTP_204_NO_CONTENT, response.status_code)
+        self.assertEqual(1, Category.objects.all().count())
