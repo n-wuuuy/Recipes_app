@@ -3,7 +3,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 
 from recipes.models import Category, Product, CookingSteps, Recipe
-from recipes.permissions import IsOwnerOrStaffOrReadOnly
+from recipes.permissions import IsOwnerOrStaffOrReadOnly, IsAdminOrReadOnly
 from recipes.serializers import CategorySerializer, ProductSerializer, CookingStepsSerializer, RecipeListSerializer, \
     RecipeDitailSerializer
 
@@ -13,7 +13,7 @@ from recipes.serializers import CategorySerializer, ProductSerializer, CookingSt
 class CategoryModelView(ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
-    permission_classes = [IsOwnerOrStaffOrReadOnly]
+    permission_classes = [IsAdminOrReadOnly]
 
 
 class ProductModelView(ModelViewSet):
