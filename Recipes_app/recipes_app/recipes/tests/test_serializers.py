@@ -50,6 +50,60 @@ class ProductSerializerTestCase(TestCase):
 
 
 class RecipeSerializerTestCase(TestCase):
+    def test_ditail_serializer(self):
+        user1 = User.objects.create(username='user1',
+                                    first_name='Ivan',
+                                    last_name='Danilevich')
+        product1 = Product.objects.create(name='Cucumber', weight=250)
+        product2 = Product.objects.create(name='Patato', weight=450)
+        category1 = Category.objects.create(name='Soup')
+        recipe1 = Recipe.objects.create(title='broth',
+                                        description='tasty soup',
+                                        picture='',
+                                        cooking_time='00:30:00',
+                                        time_create=datetime.now(),
+                                        category=category1,
+                                        owner=user1,
+                                        portion=2,
+                                        video='https://www.youtube.com/watch?v=Z2NHP2NQD4k')
+        recipe1.products.add(product1, product2)
+        step = CookingSteps.objects.create(title='Cooking soup',
+                                           instruction='120',
+                                           picture='',
+                                           recipe=recipe1)
+        recipe1.save()
+        recipe = Recipe.objects.all().annotate(product_count=Count('products')
+                                               ).select_related('category').prefetch_related('steps',
+                                                                                             'products').order_by('id')
+        data = RecipeDitailSerializer(recipe, many=True).data
+        exected_data = [
+            {
+                "id": recipe1.id,
+                "category": "Soup",
+                "steps": [
+                    {
+                        "id": step.id,
+                        "title": "Cooking soup",
+                        "instruction": "120",
+                        "picture": None,
+                        "recipe": recipe1.id
+                    },
+                ],
+                "products": [
+                    'Cucumber-250',
+                    'Patato-450'
+                ],
+                "title": "broth",
+                "description": "tasty soup",
+                "picture": None,
+                "cooking_time": "00:30:00",
+                "time_create": datetime.strftime(recipe1.time_create, '%Y-%m-%dT%H:%M:%S.%fZ'),
+                "portion": 2,
+                "video": "https://www.youtube.com/watch?v=Z2NHP2NQD4k",
+                "owner": user1.id
+            },
+        ]
+        self.assertEqual(exected_data, data)
 
     def test_list_serializer(self):
         user1 = User.objects.create(username='user1',
@@ -80,7 +134,7 @@ class RecipeSerializerTestCase(TestCase):
         recipe2.products.add(product1, product2, product3)
         recipes = Recipe.objects.all().annotate(product_count=Count('products')
                                                 ).select_related('category').prefetch_related('steps',
-                                                                                              'products')
+                                                                                              'products').order_by('id')
         data = RecipeListSerializer(recipes, many=True).data
         exected_data = [
             {
