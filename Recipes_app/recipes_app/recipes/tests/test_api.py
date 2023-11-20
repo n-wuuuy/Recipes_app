@@ -24,3 +24,15 @@ class CategoryApiTestCase(APITestCase):
         serializer_data = CategorySerializer(categories, many=True).data
         self.assertEqual(status.HTTP_200_OK, response.status_code)
         self.assertEqual(serializer_data, response.data)
+
+    def test_create(self):
+        url = reverse('category-list')
+        data = {
+            'name': 'Vegetables'
+        }
+        json_data = json.dumps(data)
+        self.client.force_login(self.user)
+        response = self.client.post(url, data=json_data,
+                                    content_type="application/json")
+        self.assertEqual(status.HTTP_201_CREATED, response.status_code)
+        self.assertEqual(3, Category.objects.all().count())
