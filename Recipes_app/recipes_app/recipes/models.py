@@ -18,6 +18,7 @@ class Category(models.Model):
 class Product(models.Model):
     name = models.CharField(max_length=256, unique=True)
     weight = models.PositiveIntegerField()
+    owner = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
         return f'{self.name}-{self.weight}'
@@ -30,7 +31,7 @@ class Product(models.Model):
 class Recipe(models.Model):
     title = models.CharField(max_length=256)
     description = models.TextField(blank=True)
-    picture = models.ImageField(upload_to='recipes_picture/')
+    picture = models.ImageField(upload_to='recipes_picture/', blank=True, null=True)
     cooking_time = models.TimeField(default=0)
     time_create = models.DateTimeField(auto_now_add=True)
     products = models.ManyToManyField(Product)
@@ -50,8 +51,9 @@ class Recipe(models.Model):
 class CookingSteps(models.Model):
     title = models.CharField(max_length=256)
     instruction = models.TextField(blank=True)
-    picture = models.ImageField(upload_to='steps_picture/')
+    picture = models.ImageField(upload_to='steps_picture/', blank=True, null=True)
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name='steps')
+    owner = models.ForeignKey(User, on_delete=models.CASCADE)
 
     def __str__(self):
         return f'{self.title}-{self.recipe}'
