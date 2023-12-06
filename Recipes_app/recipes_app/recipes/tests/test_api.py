@@ -168,3 +168,107 @@ class ProductApiTestCase(APITestCase):
         self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
         self.assertEqual(2, Product.objects.all().count())
 
+
+class CookingStepsApiTestCase(APITestCase):
+    def setUp(self):
+        self.user1 = User.objects.create(username='test_username', is_staff=True)
+        self.user2 = User.objects.create(username='test_username2', is_staff=False)
+        self.user3 = User.objects.create(username='test_username3', is_staff=False)
+        self.category1 = Category.objects.create(name='Soup')
+        self.recipe1 = Recipe.objects.create(title='broth',
+                                             description='tasty soup',
+                                             picture='',
+                                             cooking_time='00:30:00',
+                                             time_create=datetime.now(),
+                                             category=self.category1,
+                                             owner=self.user2,
+                                             portion=2,
+                                             video='https://www.youtube.com/watch?v=Z2NHP2NQD4k')
+        self.step1 = CookingSteps.objects.create(title='Wash',
+                                                 instruction='Wash',
+                                                 picture=None,
+                                                 recipe=self.recipe1,
+                                                 owner=self.user2)
+        self.step2 = CookingSteps.objects.create(title='Fry',
+                                                 instruction='10 min',
+                                                 picture=None,
+                                                 recipe=self.recipe1,
+                                                 owner=self.user2)
+
+    def test_get(self):
+        url = reverse('cookingsteps-list')
+        response = self.client.get(url)
+        self.client.force_login(self.user2)
+        steps = CookingSteps.objects.all()
+        serializer_data = CookingStepsSerializer(steps, many=True).data
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.assertEqual(serializer_data, response.data)
+
+    def test_create(self):
+        url = reverse('cookingsteps-list')
+        data = {
+            'title': 'Eat',
+            'instruction': 'Eat',
+            'picture': None,
+            'recipe': self.recipe1.id,
+            'owner': self.user2.id
+        }
+        json_data = json.dumps(data)
+        self.client.force_login(self.user2)
+        response = self.client.post(url, data=json_data,
+                                    content_type="application/json")
+        self.assertEqual(status.HTTP_201_CREATED, response.status_code)
+        self.assertEqual(3, CookingSteps.objects.all().count())
+
+    def test_update(self):
+        url = reverse('cookingsteps-detail', args=(self.step1.id,))
+        data = {
+            'title': 'Wash',
+            'instruction': 'Wash with water',
+            'picture': None,
+            'recipe': self.recipe1.id,
+            'owner': self.user2.id
+        }
+        json_data = json.dumps(data)
+        self.client.force_login(self.user2)
+        response = self.client.put(url, data=json_data,
+                                   content_type="application/json")
+        self.assertEqual(status.HTTP_200_OK, response.status_code)
+        self.step1.refresh_from_db()
+        self.assertEqual('Wash with water', self.step1.instruction)
+
+    def test_delete(self):
+        self.assertEqual(2, CookingSteps.objects.all().count())
+        url = reverse('cookingsteps-detail', args=(self.step1.id,))
+        self.client.force_login(self.user2)
+        response = self.client.delete(url, data={'id': self.step1.id})
+        self.assertEqual(status.HTTP_204_NO_CONTENT, response.status_code)
+        self.assertEqual(1, CookingSteps.objects.all().count())
+
+    def test_update_not_staff(self):
+        url = reverse('cookingsteps-detail', args=(self.step1.id,))
+        data = {
+            'title': 'Wash',
+            'instruction': 'Wash with water',
+            'picture': None,
+            'recipe': self.recipe1.id,
+            'owner': self.user2.id
+        }
+        json_data = json.dumps(data)
+        self.client.force_login(self.user3)
+        response = self.client.put(url, data=json_data,
+                                   content_type="application/json")
+        self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
+        self.assertEqual(response.data, {'detail': ErrorDetail(string='You do not have permission to perform this '
+                                                                      'action.',
+                                                               code='permission_denied')})
+        self.step1.refresh_from_db()
+        self.assertNotEquals('Wash with water', self.step1.instruction)
+
+    def test_delete_not_staff(self):
+        self.assertEqual(2, CookingSteps.objects.all().count())
+        url = reverse('cookingsteps-detail', args=(self.step1.id,))
+        self.client.force_login(self.user3)
+        response = self.client.delete(url, data={'id': self.step1.id})
+        self.assertEqual(status.HTTP_403_FORBIDDEN, response.status_code)
+        self.assertEqual(2, CookingSteps.objects.all().count())
