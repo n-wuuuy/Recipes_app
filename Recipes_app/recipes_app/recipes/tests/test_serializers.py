@@ -30,20 +30,25 @@ class CategorySerializerTestCase(TestCase):
 
 class ProductSerializerTestCase(TestCase):
     def test_serializer(self):
-        product1 = Product.objects.create(name='Cucumber', weight=250)
-        product2 = Product.objects.create(name='Patato', weight=500)
+        user1 = User.objects.create(username='user1',
+                                    first_name='Ivan',
+                                    last_name='Danilevich')
+        product1 = Product.objects.create(name='Cucumber', weight=250, owner=user1)
+        product2 = Product.objects.create(name='Patato', weight=500, owner=user1)
         products = Product.objects.all()
         data = ProductSerializer(products, many=True).data
         exected_data = [
             {
                 'id': product1.id,
                 'name': 'Cucumber',
-                'weight': 250
+                'weight': 250,
+                'owner': user1.id
             },
             {
                 'id': product2.id,
                 'name': 'Patato',
-                'weight': 500
+                'weight': 500,
+                'owner': user1.id
             }
         ]
         self.assertEqual(exected_data, data)
@@ -54,8 +59,8 @@ class RecipeSerializerTestCase(TestCase):
         user1 = User.objects.create(username='user1',
                                     first_name='Ivan',
                                     last_name='Danilevich')
-        product1 = Product.objects.create(name='Cucumber', weight=250)
-        product2 = Product.objects.create(name='Patato', weight=450)
+        product1 = Product.objects.create(name='Cucumber', weight=250, owner=user1)
+        product2 = Product.objects.create(name='Patato', weight=450, owner=user1)
         category1 = Category.objects.create(name='Soup')
         recipe1 = Recipe.objects.create(title='broth',
                                         description='tasty soup',
@@ -70,7 +75,8 @@ class RecipeSerializerTestCase(TestCase):
         step = CookingSteps.objects.create(title='Cooking soup',
                                            instruction='120',
                                            picture='',
-                                           recipe=recipe1)
+                                           recipe=recipe1,
+                                           owner=user1)
         recipe1.save()
         recipe = Recipe.objects.all().annotate(product_count=Count('products')
                                                ).select_related('category').prefetch_related('steps',
@@ -86,12 +92,23 @@ class RecipeSerializerTestCase(TestCase):
                         "title": "Cooking soup",
                         "instruction": "120",
                         "picture": None,
-                        "recipe": recipe1.id
+                        "recipe": recipe1.id,
+                        "owner": user1.id
                     },
                 ],
                 "products": [
-                    'Cucumber-250',
-                    'Patato-450'
+                    {
+                        'id': product1.id,
+                        'name': 'Cucumber',
+                        'weight': 250,
+                        'owner': user1.id
+                    },
+                    {
+                        'id': product2.id,
+                        'name': 'Patato',
+                        'weight': 450,
+                        'owner': user1.id
+                    }
                 ],
                 "title": "broth",
                 "description": "tasty soup",
@@ -103,15 +120,17 @@ class RecipeSerializerTestCase(TestCase):
                 "owner": user1.id
             },
         ]
+        print(exected_data)
+        print(data)
         self.assertEqual(exected_data, data)
 
     def test_list_serializer(self):
         user1 = User.objects.create(username='user1',
                                     first_name='Ivan',
                                     last_name='Danilevich')
-        product1 = Product.objects.create(name='Cucumber', weight=250)
-        product2 = Product.objects.create(name='Patato', weight=450)
-        product3 = Product.objects.create(name='Meat', weight=150)
+        product1 = Product.objects.create(name='Cucumber', weight=250, owner=user1)
+        product2 = Product.objects.create(name='Patato', weight=450, owner=user1)
+        product3 = Product.objects.create(name='Meat', weight=150, owner=user1)
         category1 = Category.objects.create(name='Salad')
         category2 = Category.objects.create(name='Meat')
         recipe1 = Recipe.objects.create(title='Salad',
@@ -162,8 +181,8 @@ class CookingStepsSerializerTestCase(TestCase):
         user1 = User.objects.create(username='user1',
                                     first_name='Ivan',
                                     last_name='Danilevich')
-        product1 = Product.objects.create(name='Cucumber', weight=250)
-        product2 = Product.objects.create(name='Patato', weight=450)
+        product1 = Product.objects.create(name='Cucumber', weight=250, owner=user1)
+        product2 = Product.objects.create(name='Patato', weight=450, owner=user1)
         category1 = Category.objects.create(name='Soup')
         recipe1 = Recipe.objects.create(title='broth',
                                         description='tasty soup',
@@ -179,11 +198,13 @@ class CookingStepsSerializerTestCase(TestCase):
         step1 = CookingSteps.objects.create(title='Cooking soup',
                                             instruction='120',
                                             picture='',
-                                            recipe=recipe1)
+                                            recipe=recipe1,
+                                            owner=user1)
         step2 = CookingSteps.objects.create(title='Wait',
                                             instruction='Wait about 1:00:00',
                                             picture='',
-                                            recipe=recipe1)
+                                            recipe=recipe1,
+                                            owner=user1)
         steps = CookingSteps.objects.all()
         data = CookingStepsSerializer(steps, many=True).data
         exected_data = [
@@ -192,14 +213,16 @@ class CookingStepsSerializerTestCase(TestCase):
                 'title': 'Cooking soup',
                 'instruction': '120',
                 'picture': None,
-                'recipe': recipe1.id
+                'recipe': recipe1.id,
+                'owner': user1.id
             },
             {
                 'id': step2.id,
                 'title': 'Wait',
                 'instruction': 'Wait about 1:00:00',
                 'picture': None,
-                'recipe': recipe1.id
+                'recipe': recipe1.id,
+                'owner': user1.id
             }
         ]
         self.assertEqual(exected_data, data)
