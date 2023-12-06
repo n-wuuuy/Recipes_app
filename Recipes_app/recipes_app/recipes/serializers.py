@@ -33,7 +33,7 @@ class CookingStepsSerializer(serializers.ModelSerializer):
 class RecipeDitailSerializer(serializers.ModelSerializer):
     category = serializers.StringRelatedField(read_only=True)
     steps = CookingStepsSerializer(many=True)
-    products = serializers.StringRelatedField(many=True)
+    products = ProductSerializer(many=True)
 
     class Meta:
         model = Recipe
